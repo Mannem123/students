@@ -7,7 +7,22 @@
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-       
+       <style>
+            .pagination a {
+                color: black;
+                float: middle;
+                padding: 8px 16px;
+                text-decoration: none;
+                transition: background-color .3s;
+            }
+
+            .pagination a.active {
+                background-color: #0099ff;
+                color: white;
+            }
+
+            .pagination a:hover:not(.active) {background-color: #ddd;}
+        </style>
     </head>
     <body>
        
@@ -17,18 +32,27 @@
             </div>
            
          <?php
+    $num_rec_per_page=4;
              if(isset($_GET['update'])){
                 include 'condition.php';
             }
             include 'dbconnect.php';
+        $sql = "SELECT * FROM students_mallikarjuna"; 
+     $total_records = $conn->query($sql); //run the query
+     $total_pages = ceil(($total_records->num_rows) / $num_rec_per_page); 
+   
+    if($total_records->num_rows>0){
+        if (isset($_GET['page'])) { $page  = $_GET['page']; } else { $page=1; }; 
+        $start_from = ($page-1) * $num_rec_per_page; 
+        
             echo '<div class="table-responsive">';
                 echo"<table class='table table-hover'>";
                 echo "<thead>
                         <tr> <th>Rollno</th> <th>Name</th>  <th>Mobile</th> <th>Email</th> <th>Cgpa</th><th> </th><th> </th></tr>
                     </thead>";
-                    $sql= "SELECT rollno,name,mobile,email,cgpa FROM students_mallikarjuna";
+                    $sql= "SELECT rollno,name,mobile,email,cgpa FROM students_mallikarjuna LIMIT $start_from, $num_rec_per_page";
                     $result=$conn->query($sql);
-                if($result->num_rows>0){
+                
                     while($row = $result->fetch_array()) {
                         $rollno=$row["0"];
                         $name=$row["1"];
@@ -42,16 +66,32 @@
                             echo "<td>".$mobile."</td>";
                             echo "<td>".$email."</td>";
                             echo "<td>".$cgpa."</td>";
-                          echo"<td><a href='bsdelete.php?rollno=$rollno'><input type='button' class='btn' value='Delete'></input></a></td>"; 
+                            echo"<td><a href='bsdelete.php?rollno=$rollno'><input type='button' class='btn'                 value='Delete'></input></a></td>"; 
                         //<!-- Trigger the modal with a button -->
                             echo "<td><a data-toggle='modal' href='riktam3.php?update=yes&rollno=$rollno&name=$name&mobile=$mobile&email=$email&cgpa=$cgpa'>
                                       <input type='button' class='btn' value='Update'></input></a></td>";
                         echo "</tr>";
                         echo "</tbody>";
                     }
-                }
-                else echo "0 results";
                 echo"</table>";
+                }
+                
+                else echo "0 results";
+          
+        echo"<div class='pagination'>";
+
+          echo "<a href='riktam3.php?page=1'>".'|<'."</a>";
+            for ($i=2; $i < $total_pages; $i++) { 
+                echo "<a href='riktam3.php?page=$i'>".$i."</a>"; 
+            } 
+          echo "<a href='riktam3.php?page=$total_pages'>".'>|'."</a>"; // Goto last page
+
+
+        echo"</div>";
+
+     
+
+    
             echo"</div>";
             $conn->close(); 
         ?>
